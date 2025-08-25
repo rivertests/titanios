@@ -3,30 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Você está offline</title>
+  <title>Titan IA</title>
   <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
+  <!-- Este é o conteúdo que o usuário vê enquanto a verificação acontece ou se estiver offline -->
   <div class="container">
     <img src="assets/images/logo.png" alt="Logo do App" width="100">
-    <h1>Você está offline</h1>
-    <p>Parece que não há conexão com a internet. O conteúdo será carregado assim que a conexão for restabelecida.</p>
+    <h1>Carregando...</h1>
+    <p>Se você estiver sem conexão, esta tela permanecerá.</p>
   </div>
 
-  <!-- Registra o Service Worker para garantir que a página offline funcione -->
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then(
-          (registration) => {
-            console.log('ServiceWorker registration successful');
-          },
-          (err) => {
-            console.error('ServiceWorker registration failed: ', err);
-          },
-        );
-      });
+    // Função principal que executa ao iniciar o app
+    function initializeApp() {
+      // ❗️ TROQUE PELA SUA URL REAL!
+      const onlineUrl = "https://inteligenciatitan.com.br";
+
+      // Verifica a conexão de uma forma mais confiável que apenas navigator.onLine
+      // Tenta buscar um pequeno recurso do seu próprio servidor.
+      fetch(onlineUrl, { method: 'HEAD', mode: 'no-cors' })
+        .then((response) => {
+          // Se a requisição HEAD teve sucesso, significa que há conexão.
+          // Redireciona para o site.
+          // Usamos window.location.replace para que o usuário não possa "voltar" para a tela offline.
+          window.location.replace(onlineUrl);
+        })
+        .catch((error) => {
+          // Se a requisição falhou, significa que estamos offline.
+          // Apenas mostramos a mensagem de erro no console e deixamos o usuário na página atual.
+          console.error("Modo Offline: Não foi possível conectar a", onlineUrl, error);
+          document.querySelector('h1').textContent = 'Você está offline';
+          document.querySelector('p').textContent = 'Verifique sua conexão com a internet.';
+        });
     }
+
+    // Roda a função assim que o script é carregado
+    initializeApp();
   </script>
 </body>
 </html>
