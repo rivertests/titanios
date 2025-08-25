@@ -689,38 +689,24 @@
     });
 </script>
 
-<!-- O IFRAME QUE VAI CARREGAR O SITE ONLINE (ADICIONADO) -->
-<iframe id="site-iframe" src="about:blank"></iframe>
-
-<!-- O SCRIPT DE VERIFICAÇÃO (ADICIONADO E CORRIGIDO) -->
 <script>
-    function initializeApp() {
+  document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('login-form');
+  
+    loginForm.addEventListener('submit', (event) => {
+      event.preventDefault();
       const onlineUrl = "https://inteligenciatitan.com.br";
-      const offlineContainer = document.getElementById('root'); // CORRIGIDO para usar seu container principal
-      const siteIframe = document.getElementById('site-iframe');
-
-      // Verifica a conexão
-      fetch(onlineUrl, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' }) // Adicionado cache: no-store
-        .then(() => {
-          // --- ONLINE ---
-          console.log("Online. Carregando site no iframe.");
-          // Esconde o conteúdo offline
-          offlineContainer.style.display = 'none';
-          // Define a URL do iframe e o torna visível
-          siteIframe.src = onlineUrl;
-          siteIframe.style.display = 'block';
-        })
-        .catch((err) => {
-          // --- OFFLINE ---
-          console.error("Offline. A página de fallback já está visível.", err);
-          // Não precisa fazer nada visualmente, pois a página offline já está na tela.
-          // O script do popup já trata o clique nos botões.
-        });
-    }
-
-    // Roda a função de inicialização
-    initializeApp();
-</script>
+      window.open(onlineUrl, '_system');
+    });
+  
+    const createAccountButton = document.getElementById('create-account-button');
+    createAccountButton.addEventListener('click', () => {
+      const onlineUrl = "https://inteligenciatitan.com.br/register";
+      window.open(onlineUrl, '_system');
+    });
+  });
+  </script>
+  
 
 </body>
 </html>
