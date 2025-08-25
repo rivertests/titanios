@@ -2,66 +2,23 @@
 <html lang="pt-BR" translate="no">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <!-- CORREÇÃO 1: Adicionado user-scalable=no para bloquear o zoom -->
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
     <meta name="google" content="notranslate">
-
     <link rel="shortcut icon" type="image/ico" href="favicon.ico">
-
     <title>Titan</title>
-
     <style>
       body { background-color: #101212; }
       * { -webkit-tap-highlight-color: transparent !important; }
     </style>
-
     <style>
-      /* Estilos para o iframe e controle de visibilidade */
-      html, body {
-        margin: 0;
-        padding: 0;
-        height: 100%;
-        width: 100%;
-        overflow: hidden;
-      }
-      #site-iframe {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        border: none;
-        z-index: 10;
-        display: none;
-      }
-      /* CORREÇÃO 2: Conteúdo offline começa escondido para evitar o "piscar" */
-      #root {
-        display: none;
-        height: 100%;
-      }
+      html, body { margin: 0; padding: 0; height: 100%; width: 100%; overflow: hidden; }
+      #site-iframe { position: fixed; top: 0; left: 0; width: 100%; height: 100%; border: none; z-index: 10; display: none; }
+      #root { display: none; height: 100%; }
     </style>
-
-    <!-- Seu código de estilo original completo -->
     <style>
-        :root {
-          font-family: Nunito, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-          font-optical-sizing: auto;
-          font-weight: 400;
-          font-style: normal;
-        }
+        :root { font-family: Nunito, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; font-optical-sizing: auto; font-weight: 400; font-style: normal; }
         * { box-sizing: border-box; }
-        body {
-          --titan-background: #101212;
-          --titan-color: white;
-          position: absolute;
-          inset: 0;
-          margin: 0;
-          padding: 0;
-          overflow-x: hidden;
-          overflow-y: auto;
-          background-color: var(--titan-background);
-          color: var(--titan-color);
-        }
+        body { --titan-background: #101212; --titan-color: white; position: absolute; inset: 0; margin: 0; padding: 0; overflow-x: hidden; overflow-y: auto; background-color: var(--titan-background); color: var(--titan-color); }
         :where(h1), :where(h2), :where(h3), :where(h4), :where(h5), :where(h6) { margin: 0; padding: 0; }
         :where(button[data-unstyled]) { background: none; color: inherit; border: none; padding: 0; font: inherit; cursor: pointer; outline: none; appearance: unset; padding-block: unset; padding-inline: unset; display: block; }
         :focus:where(button[data-unstyled]) { outline: none; }
@@ -134,6 +91,7 @@
 </head>
 <body>
     <div id="root">
+        <!-- Seu código HTML original da página offline completo -->
         <main class="titan-home">
             <article class="titan-home__topo">
                 <div class="titan-logo titan-logo--quadrado-1 titan-home__logo"></div>
@@ -232,46 +190,49 @@
     <!-- O Iframe que vai carregar o site online -->
     <iframe id="site-iframe" src="about:blank"></iframe>
 
-    <!-- Script de Inicialização com todas as correções -->
-    <script type="module">
-        // Importa os plugins do Capacitor
-        import { SplashScreen } from 'https://unpkg.com/@capacitor/splash-screen@5.0.7/dist/index.js';
-        import { StatusBar } from 'https://unpkg.com/@capacitor/status-bar@5.0.7/dist/index.js';
+    <!-- Script de Inicialização Final -->
+    <script>
+        // A função async é colocada dentro de um listener para garantir que a plataforma Capacitor esteja pronta
+        window.addEventListener('capacitorDidLoad', () => {
+            initializeApp();
+        });
 
         async function initializeApp() {
-          // CORREÇÃO 3: Diz para a Status Bar não sobrepor a WebView
-          // Isso resolve o problema de forma nativa para o iframe E para a página offline
-          try {
-            await StatusBar.setOverlaysWebView({ overlay: false });
-          } catch(e) {
-            console.error("Erro ao configurar a Status Bar. Provavelmente não está em um ambiente nativo.", e);
-          }
-          
-          const onlineUrl = "https://inteligenciatitan.com.br";
-          const offlineContainer = document.getElementById('root');
-          const siteIframe = document.getElementById('site-iframe');
-
-          try {
-            await fetch(onlineUrl, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' });
+            // Acessa os plugins da forma correta e segura, 100% offline
+            const { SplashScreen, StatusBar } = Capacitor.Plugins;
             
-            // --- ONLINE ---
-            console.log("Online. Carregando site no iframe.");
-            offlineContainer.style.display = 'none';
-            siteIframe.src = onlineUrl;
-            siteIframe.style.display = 'block';
+            // CORREÇÃO 3: Diz para a Status Bar não sobrepor a WebView
+            try {
+                await StatusBar.setOverlaysWebView({ overlay: false });
+            } catch(e) {
+                console.error("StatusBar plugin not available.", e);
+            }
+            
+            const onlineUrl = "https://inteligenciatitan.com.br";
+            const offlineContainer = document.getElementById('root');
+            const siteIframe = document.getElementById('site-iframe');
 
-          } catch (err) {
-            // --- OFFLINE ---
-            console.error("Offline. Exibindo página de fallback.", err);
-            offlineContainer.style.display = 'block';
-          
-          } finally {
-            // CORREÇÃO 4: Esconde a splash screen, não importa se está online ou offline
-            await SplashScreen.hide();
-          }
+            try {
+                await fetch(onlineUrl, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' });
+                
+                // --- ONLINE ---
+                offlineContainer.style.display = 'none';
+                siteIframe.src = onlineUrl;
+                siteIframe.style.display = 'block';
+
+            } catch (err) {
+                // --- OFFLINE ---
+                offlineContainer.style.display = 'block';
+            
+            } finally {
+                // CORREÇÃO 4: Esconde a splash screen, não importa o resultado
+                try {
+                    await SplashScreen.hide();
+                } catch(e) {
+                    console.error("SplashScreen plugin not available.", e);
+                }
+            }
         }
-
-        initializeApp();
     </script>
 </body>
 </html>
