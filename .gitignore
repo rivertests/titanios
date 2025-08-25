@@ -7,7 +7,6 @@
 /build
 
 # Capacitor specific
-/ios
 /android
 /electron
 
