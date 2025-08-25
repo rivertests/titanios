@@ -2,43 +2,74 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Titan IA</title>
   <link rel="stylesheet" href="assets/css/style.css">
+  <style>
+    /* Estilos para garantir que o iframe e o body ocupem 100% da tela */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      width: 100%;
+      overflow: hidden; /* Evita barras de rolagem indesejadas */
+    }
+    #site-iframe {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      border: none; /* Remove a borda do iframe */
+      display: none; /* Começa escondido */
+    }
+    .container {
+      /* Garante que a mensagem offline fique visível */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+    }
+  </style>
 </head>
 <body>
-  <!-- Este é o conteúdo que o usuário vê enquanto a verificação acontece ou se estiver offline -->
-  <div class="container">
+  <!-- Conteúdo offline que serve como fallback -->
+  <div id="offline-container" class="container">
     <img src="assets/images/logo.png" alt="Logo do App" width="100">
     <h1>Carregando...</h1>
-    <p>Se você estiver sem conexão, esta tela permanecerá.</p>
+    <p>Verificando conexão com a internet.</p>
   </div>
 
-  <script>
-    // Função principal que executa ao iniciar o app
-    function initializeApp() {
-      // ❗️ TROQUE PELA SUA URL REAL!
-      const onlineUrl = "https://inteligenciatitan.com.br";
+  <!-- O Iframe que vai carregar o site online -->
+  <iframe id="site-iframe" src="about:blank"></iframe>
 
-      // Verifica a conexão de uma forma mais confiável que apenas navigator.onLine
-      // Tenta buscar um pequeno recurso do seu próprio servidor.
+  <script>
+    function initializeApp() {
+      const onlineUrl = "https://inteligenciatitan.com.br";
+      const offlineContainer = document.getElementById('offline-container');
+      const siteIframe = document.getElementById('site-iframe');
+
+      // Verifica a conexão
       fetch(onlineUrl, { method: 'HEAD', mode: 'no-cors' })
-        .then((response) => {
-          // Se a requisição HEAD teve sucesso, significa que há conexão.
-          // Redireciona para o site.
-          // Usamos window.location.replace para que o usuário não possa "voltar" para a tela offline.
-          window.location.replace(onlineUrl);
+        .then(() => {
+          // --- ONLINE ---
+          console.log("Online. Carregando site no iframe.");
+          // Esconde a mensagem offline
+          offlineContainer.style.display = 'none';
+          // Define a URL do iframe e o torna visível
+          siteIframe.src = onlineUrl;
+          siteIframe.style.display = 'block';
         })
-        .catch((error) => {
-          // Se a requisição falhou, significa que estamos offline.
-          // Apenas mostramos a mensagem de erro no console e deixamos o usuário na página atual.
-          console.error("Modo Offline: Não foi possível conectar a", onlineUrl, error);
-          document.querySelector('h1').textContent = 'Você está offline';
-          document.querySelector('p').textContent = 'Verifique sua conexão com a internet.';
+        .catch(() => {
+          // --- OFFLINE ---
+          console.log("Offline. Exibindo mensagem de fallback.");
+          // Atualiza a mensagem na tela
+          document.querySelector('#offline-container h1').textContent = 'Você está offline';
+          document.querySelector('#offline-container p').textContent = 'Verifique sua conexão com a internet.';
         });
     }
 
-    // Roda a função assim que o script é carregado
     initializeApp();
   </script>
 </body>
