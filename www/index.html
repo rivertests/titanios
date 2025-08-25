@@ -2,7 +2,7 @@
 <html lang="pt-BR" translate="no">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="google" content="notranslate">
 
     <link rel="shortcut icon" type="image/ico" href="favicon.ico">
@@ -14,8 +14,35 @@
       * { -webkit-tap-highlight-color: transparent !important; }
     </style>
 
+    <!-- ESTILOS ADICIONADOS PARA O IFRAME E CONTROLE DE VISIBILIDADE -->
     <style>
-        /* Estilos Globais e Reset */
+      /* Garante que o iframe e o body ocupem 100% da tela */
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        width: 100%;
+        overflow: hidden; /* Evita barras de rolagem indesejadas */
+      }
+      #site-iframe {
+        position: fixed; /* Usa fixed para cobrir tudo, mesmo com scroll */
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border: none; /* Remove a borda do iframe */
+        z-index: 10; /* Fica acima do conteúdo offline, mas abaixo do popup */
+        display: none; /* Começa escondido */
+      }
+      #root {
+        /* O conteúdo offline começa visível */
+        display: block;
+        height: 100%; /* Garante que o container ocupe a altura toda */
+      }
+    </style>
+
+    <style>
+        /* Estilos Globais e Reset (SEU CÓDIGO ORIGINAL) */
         :root {
           font-family: Nunito, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
           font-optical-sizing: auto;
@@ -555,143 +582,145 @@
     </div>
 </div>
 
+<script>
+    // SEU SCRIPT ORIGINAL
+    document.addEventListener('DOMContentLoaded', () => {
+      const translations = {
+        'pt-br': {
+          loginTitle: 'Acesse sua conta Titan', emailLabel: 'E-mail', passwordLabel: 'Senha', keepConnectedLabel: 'Manter conectado', loginButton: 'Entrar', showPasswordAria: 'Mostrar senha', hidePasswordAria: 'Ocultar senha', popupTitle: 'Falha na Conexão', popupMessage: 'Você não está conectado à internet. Por favor, conecte-se a uma rede e reinicie o aplicativo para acessar a IA Titan.', popupCloseButton: 'Entendi', createAccountLink: 'Crie sua conta'
+        },
+        'es-es': {
+          loginTitle: 'Accede a tu cuenta Titan', emailLabel: 'Correo electrónico', passwordLabel: 'Contraseña', keepConnectedLabel: 'Mantener la sesión iniciada', loginButton: 'Entrar', showPasswordAria: 'Mostrar contraseña', hidePasswordAria: 'Ocultar contraseña', popupTitle: 'Fallo de Conexión', popupMessage: 'No estás conectado a internet. Por favor, conéctate a una red y reinicia la aplicación para acceder a la IA Titan.', popupCloseButton: 'Entendido', createAccountLink: 'Crea tu cuenta'
+        },
+        'en-us': {
+          loginTitle: 'Access your Titan account', emailLabel: 'E-mail', passwordLabel: 'Password', keepConnectedLabel: 'Keep me logged in', loginButton: 'Login', showPasswordAria: 'Show password', hidePasswordAria: 'Hide password', popupTitle: 'Connection Failure', popupMessage: 'You are not connected to the internet. Please connect to a network and restart the application to access the Titan AI.', popupCloseButton: 'Got it', createAccountLink: 'Create your account'
+        }
+      };
+      const localeButtons = document.querySelectorAll('.titan-locale__botao');
+      let currentLang = 'pt-br';
+      function setLanguage(lang) {
+        currentLang = lang;
+        document.documentElement.lang = lang.split('-')[0];
+        document.querySelectorAll('[data-translate]').forEach(el => {
+          const key = el.dataset.translate;
+          if (translations[lang][key]) {
+            el.textContent = translations[lang][key];
+          }
+        });
+        localeButtons.forEach(btn => {
+          const isActive = btn.dataset.lang === lang;
+          btn.classList.toggle('titan-locale__botao--ativo', isActive);
+          btn.setAttribute('aria-checked', isActive);
+        });
+        const passwordButton = document.getElementById('password-mostrar-senha');
+        const passwordInput = document.getElementById('password');
+        const isPasswordVisible = passwordInput.type === 'text';
+        passwordButton.setAttribute('aria-label', isPasswordVisible ? translations[lang].hidePasswordAria : translations[lang].showPasswordAria);
+      }
+      localeButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          setLanguage(button.dataset.lang);
+        });
+      });
+      const formFields = document.querySelectorAll('.titan-campo__input');
+      formFields.forEach(input => {
+        const fieldContainer = input.parentElement;
+        function updateFieldState() {
+          if (input.value) {
+            fieldContainer.classList.remove('titan-campo--vazio');
+          } else {
+            fieldContainer.classList.add('titan-campo--vazio');
+          }
+        }
+        input.addEventListener('focus', () => {
+          fieldContainer.classList.add('titan-campo--com-foco');
+        });
+        input.addEventListener('blur', () => {
+          fieldContainer.classList.remove('titan-campo--com-foco');
+        });
+        input.addEventListener('input', updateFieldState);
+        updateFieldState();
+      });
+      const passwordInput = document.getElementById('password');
+      const togglePasswordButton = document.getElementById('password-mostrar-senha');
+      const passwordIconContainer = document.getElementById('password-icon-container');
+      const eyeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+      const eyeOffIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+      togglePasswordButton.addEventListener('click', () => {
+        const isPassword = passwordInput.type === 'password';
+        passwordInput.type = isPassword ? 'text' : 'password';
+        passwordIconContainer.innerHTML = isPassword ? eyeOffIcon : eyeIcon;
+        togglePasswordButton.setAttribute('aria-label', isPassword ? translations[currentLang].hidePasswordAria : translations[currentLang].showPasswordAria);
+      });
 
-  <!-- O Iframe que vai carregar o site online -->
-  <iframe id="site-iframe" src="about:blank"></iframe>
+      // SCRIPT ATUALIZADO
+      const loginForm = document.getElementById('login-form');
+      const popupOverlay = document.getElementById('popup-overlay');
+      const popupCloseButton = document.getElementById('popup-close-button');
+      const createAccountButton = document.getElementById('create-account-button'); // Botão novo
 
-  <script>
+      // Função para abrir o popup
+      function openPopup() {
+        popupOverlay.classList.add('titan-popup-overlay--ativo');
+      }
+
+      // Evento para o botão de Entrar
+      loginForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        openPopup();
+      });
+
+      // Evento para o botão de Criar Conta
+      createAccountButton.addEventListener('click', () => {
+        openPopup();
+      });
+
+      // Evento para fechar o popup
+      popupCloseButton.addEventListener('click', () => {
+        popupOverlay.classList.remove('titan-popup-overlay--ativo');
+      });
+
+      popupOverlay.addEventListener('click', (event) => {
+        if (event.target === popupOverlay) {
+          popupOverlay.classList.remove('titan-popup-overlay--ativo');
+        }
+      });
+      setLanguage('pt-br');
+    });
+</script>
+
+<!-- O IFRAME QUE VAI CARREGAR O SITE ONLINE (ADICIONADO) -->
+<iframe id="site-iframe" src="about:blank"></iframe>
+
+<!-- O SCRIPT DE VERIFICAÇÃO (ADICIONADO E CORRIGIDO) -->
+<script>
     function initializeApp() {
       const onlineUrl = "https://inteligenciatitan.com.br";
-      const offlineContainer = document.getElementById('offline-container');
+      const offlineContainer = document.getElementById('root'); // CORRIGIDO para usar seu container principal
       const siteIframe = document.getElementById('site-iframe');
 
       // Verifica a conexão
-      fetch(onlineUrl, { method: 'HEAD', mode: 'no-cors' })
+      fetch(onlineUrl, { method: 'HEAD', mode: 'no-cors', cache: 'no-store' }) // Adicionado cache: no-store
         .then(() => {
           // --- ONLINE ---
           console.log("Online. Carregando site no iframe.");
-          // Esconde a mensagem offline
+          // Esconde o conteúdo offline
           offlineContainer.style.display = 'none';
           // Define a URL do iframe e o torna visível
           siteIframe.src = onlineUrl;
           siteIframe.style.display = 'block';
         })
-        .catch(() => {
+        .catch((err) => {
           // --- OFFLINE ---
-          console.log("Offline. Exibindo mensagem de fallback.");
-          // Atualiza a mensagem na tela
-          document.querySelector('#offline-container h1').textContent = 'Você está offline';
-          document.querySelector('#offline-container p').textContent = 'Verifique sua conexão com a internet.';
+          console.error("Offline. A página de fallback já está visível.", err);
+          // Não precisa fazer nada visualmente, pois a página offline já está na tela.
+          // O script do popup já trata o clique nos botões.
         });
     }
 
+    // Roda a função de inicialização
     initializeApp();
-  </script>
-
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const translations = {
-      'pt-br': {
-        loginTitle: 'Acesse sua conta Titan', emailLabel: 'E-mail', passwordLabel: 'Senha', keepConnectedLabel: 'Manter conectado', loginButton: 'Entrar', showPasswordAria: 'Mostrar senha', hidePasswordAria: 'Ocultar senha', popupTitle: 'Falha na Conexão', popupMessage: 'Você não está conectado à internet. Por favor, conecte-se a uma rede e reinicie o aplicativo para acessar a IA Titan.', popupCloseButton: 'Entendi', createAccountLink: 'Crie sua conta'
-      },
-      'es-es': {
-        loginTitle: 'Accede a tu cuenta Titan', emailLabel: 'Correo electrónico', passwordLabel: 'Contraseña', keepConnectedLabel: 'Mantener la sesión iniciada', loginButton: 'Entrar', showPasswordAria: 'Mostrar contraseña', hidePasswordAria: 'Ocultar contraseña', popupTitle: 'Fallo de Conexión', popupMessage: 'No estás conectado a internet. Por favor, conéctate a una red y reinicia la aplicación para acceder a la IA Titan.', popupCloseButton: 'Entendido', createAccountLink: 'Crea tu cuenta'
-      },
-      'en-us': {
-        loginTitle: 'Access your Titan account', emailLabel: 'E-mail', passwordLabel: 'Password', keepConnectedLabel: 'Keep me logged in', loginButton: 'Login', showPasswordAria: 'Show password', hidePasswordAria: 'Hide password', popupTitle: 'Connection Failure', popupMessage: 'You are not connected to the internet. Please connect to a network and restart the application to access the Titan AI.', popupCloseButton: 'Got it', createAccountLink: 'Create your account'
-      }
-    };
-    const localeButtons = document.querySelectorAll('.titan-locale__botao');
-    let currentLang = 'pt-br';
-    function setLanguage(lang) {
-      currentLang = lang;
-      document.documentElement.lang = lang.split('-')[0];
-      document.querySelectorAll('[data-translate]').forEach(el => {
-        const key = el.dataset.translate;
-        if (translations[lang][key]) {
-          el.textContent = translations[lang][key];
-        }
-      });
-      localeButtons.forEach(btn => {
-        const isActive = btn.dataset.lang === lang;
-        btn.classList.toggle('titan-locale__botao--ativo', isActive);
-        btn.setAttribute('aria-checked', isActive);
-      });
-      const passwordButton = document.getElementById('password-mostrar-senha');
-      const passwordInput = document.getElementById('password');
-      const isPasswordVisible = passwordInput.type === 'text';
-      passwordButton.setAttribute('aria-label', isPasswordVisible ? translations[lang].hidePasswordAria : translations[lang].showPasswordAria);
-    }
-    localeButtons.forEach(button => {
-      button.addEventListener('click', () => {
-        setLanguage(button.dataset.lang);
-      });
-    });
-    const formFields = document.querySelectorAll('.titan-campo__input');
-    formFields.forEach(input => {
-      const fieldContainer = input.parentElement;
-      function updateFieldState() {
-        if (input.value) {
-          fieldContainer.classList.remove('titan-campo--vazio');
-        } else {
-          fieldContainer.classList.add('titan-campo--vazio');
-        }
-      }
-      input.addEventListener('focus', () => {
-        fieldContainer.classList.add('titan-campo--com-foco');
-      });
-      input.addEventListener('blur', () => {
-        fieldContainer.classList.remove('titan-campo--com-foco');
-      });
-      input.addEventListener('input', updateFieldState);
-      updateFieldState();
-    });
-    const passwordInput = document.getElementById('password');
-    const togglePasswordButton = document.getElementById('password-mostrar-senha');
-    const passwordIconContainer = document.getElementById('password-icon-container');
-    const eyeIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
-    const eyeOffIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-eye-off"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
-    togglePasswordButton.addEventListener('click', () => {
-      const isPassword = passwordInput.type === 'password';
-      passwordInput.type = isPassword ? 'text' : 'password';
-      passwordIconContainer.innerHTML = isPassword ? eyeOffIcon : eyeIcon;
-      togglePasswordButton.setAttribute('aria-label', isPassword ? translations[currentLang].hidePasswordAria : translations[currentLang].showPasswordAria);
-    });
-
-    // SCRIPT ATUALIZADO
-    const loginForm = document.getElementById('login-form');
-    const popupOverlay = document.getElementById('popup-overlay');
-    const popupCloseButton = document.getElementById('popup-close-button');
-    const createAccountButton = document.getElementById('create-account-button'); // Botão novo
-
-    // Função para abrir o popup
-    function openPopup() {
-      popupOverlay.classList.add('titan-popup-overlay--ativo');
-    }
-
-    // Evento para o botão de Entrar
-    loginForm.addEventListener('submit', (event) => {
-      event.preventDefault();
-      openPopup();
-    });
-
-    // Evento para o botão de Criar Conta
-    createAccountButton.addEventListener('click', () => {
-      openPopup();
-    });
-
-    // Evento para fechar o popup
-    popupCloseButton.addEventListener('click', () => {
-      popupOverlay.classList.remove('titan-popup-overlay--ativo');
-    });
-
-    popupOverlay.addEventListener('click', (event) => {
-      if (event.target === popupOverlay) {
-        popupOverlay.classList.remove('titan-popup-overlay--ativo');
-      }
-    });
-    setLanguage('pt-br');
-  });
 </script>
+
 </body>
 </html>
