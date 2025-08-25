@@ -3,12 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Carregando...</title>
-  <!-- Isso garante que o app use a tela inteira em modo standalone no iOS -->
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Você está offline</title>
+  <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-  <script src="js/app.js"></script>
+  <div class="container">
+    <img src="assets/images/logo.png" alt="Logo do App" width="100">
+    <h1>Você está offline</h1>
+    <p>Parece que não há conexão com a internet. O conteúdo será carregado assim que a conexão for restabelecida.</p>
+  </div>
+
+  <!-- Registra o Service Worker para garantir que a página offline funcione -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js').then(
+          (registration) => {
+            console.log('ServiceWorker registration successful');
+          },
+          (err) => {
+            console.error('ServiceWorker registration failed: ', err);
+          },
+        );
+      });
+    }
+  </script>
 </body>
 </html>
